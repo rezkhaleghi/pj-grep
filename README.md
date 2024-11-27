@@ -27,7 +27,7 @@ To use [`pjgrep`](command:_github.copilot.openSymbolFromReferences?%5B%22%22%2C%
    Clone this repository to your local machine:
 
    ```sh
-   git clone https://github.com/yourusername/pjgrep.git
+   git clone https://github.com/rezkhaleghi/pj-grep.git
    cd pjgrep
    ```
 
@@ -93,4 +93,5 @@ This project is licensed under the MIT License. See the LICENSE file for details
 ## Acknowledgements
 
 - [Rust Programming Language](https://www.rust-lang.org/)
+
 # pj-grep
