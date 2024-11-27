@@ -15,7 +15,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 2 || args.len() > 4 {
-        eprintln!("Usage: nano-grep <pattern> [directory] [--format=<ext1,ext2,...>]");
+        eprintln!("Usage: pjgrep <pattern> [directory] [--format=<ext1,ext2,...>]");
         std::process::exit(1);
     }
 
