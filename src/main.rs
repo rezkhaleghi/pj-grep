@@ -2,14 +2,14 @@ use std::env;
 use std::fs::{self};
 use std::io::{self, Read};
 use std::path::Path;
-use std::time::Instant; 
+use std::time::Instant;
 
-const RESET: &str = "\x1b[0m"; 
-const RED: &str = "\x1b[31m";    
-const GREEN: &str = "\x1b[32m";  
-const YELLOW: &str = "\x1b[33m";  
-const CYAN: &str = "\x1b[36m";    
-const MAGENTA: &str = "\x1b[35m"; 
+const RESET: &str = "\x1b[0m";
+const RED: &str = "\x1b[31m";
+const GREEN: &str = "\x1b[32m";
+const YELLOW: &str = "\x1b[33m";
+const CYAN: &str = "\x1b[36m";
+const MAGENTA: &str = "\x1b[35m";
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
@@ -20,7 +20,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let pattern = &args[1];
-    let directory = args.get(2).map_or(".", |dir| dir);  // Default to current directory if no directory is provided
+    let directory = args.get(2).map_or(".", |dir| dir); // Default to current directory if no directory is provided
     let formats = get_file_formats(&args);
 
     if pattern.is_empty() {
@@ -43,9 +43,7 @@ fn get_file_formats(args: &[String]) -> Option<Vec<String>> {
     for arg in args.iter() {
         if arg.starts_with("--format=") {
             let formats = arg.strip_prefix("--format=").unwrap_or("");
-            let extensions: Vec<String> = formats.split(',')
-                .map(|ext| ext.to_string())
-                .collect();
+            let extensions: Vec<String> = formats.split(',').map(|ext| ext.to_string()).collect();
             return Some(extensions);
         }
     }
@@ -61,7 +59,12 @@ fn search_in_filesystem(pattern: &str, directory: &str, formats: Option<Vec<Stri
     Ok(matched_files_count)
 }
 
-fn traverse_directory(path: &Path, pattern: &str, formats: &Option<Vec<String>>, matched_files_count: &mut usize) -> io::Result<()> {
+fn traverse_directory(
+    path: &Path,
+    pattern: &str,
+    formats: &Option<Vec<String>>,
+    matched_files_count: &mut usize,
+) -> io::Result<()> {
     if path.is_dir() {
         let entries = fs::read_dir(path)?;
         for entry in entries {
@@ -77,16 +80,24 @@ fn traverse_directory(path: &Path, pattern: &str, formats: &Option<Vec<String>>,
                     }
                 }
 
-                if let Some((filename_match, content_match, match_count)) = match_pattern(&entry_path, pattern)? {
+                if let Some((filename_match, content_match, match_count, previews)) =
+                    match_pattern(&entry_path, pattern)?
+                {
                     *matched_files_count += 1;
                     println!("\n[RESULT] -> {}", entry_path.display());
 
                     if filename_match {
-                        println!("{}  ➡Filename match found:", MAGENTA);
+                        println!("{}  ➡ Filename match found:", MAGENTA);
                     }
 
                     if content_match {
-                        println!("{}  ➡ Content match found: {} time(s){}", MAGENTA, match_count, RESET);
+                        println!(
+                            "{}  ➡ Content match found: {} time(s){}",
+                            MAGENTA, match_count, RESET
+                        );
+                        for (i, preview) in previews.iter().enumerate() {
+                            println!("{}. {}", i + 1, preview);
+                        }
                     }
 
                     if filename_match && content_match {
@@ -110,40 +121,77 @@ fn matches_extension(path: &Path, formats: &[String]) -> bool {
     false
 }
 
-fn match_pattern(path: &Path, pattern: &str) -> io::Result<Option<(bool, bool, usize)>> {
+fn match_pattern(
+    path: &Path,
+    pattern: &str,
+) -> io::Result<Option<(bool, bool, usize, Vec<String>)>> {
     let mut filename_match = false;
     let mut content_match = false;
     let mut match_count = 0;
+    let mut previews = Vec::new();
 
-    if path.file_name().unwrap_or_default().to_str().unwrap_or_default().contains(pattern) {
+    if path
+        .file_name()
+        .unwrap_or_default()
+        .to_str()
+        .unwrap_or_default()
+        .contains(pattern)
+    {
         filename_match = true;
     }
 
     match read_file_and_search(path, pattern) {
-        Ok(count) if count > 0 => {
+        Ok((count, lines)) if count > 0 => {
             content_match = true;
             match_count = count;
-        },
-        Ok(_) => {},
+            previews = lines;
+        }
+        Ok(_) => {}
         Err(err) => {
             if err.kind() != io::ErrorKind::InvalidData {
                 return Err(err);
             }
-        },
+        }
     }
 
     if filename_match || content_match {
-        Ok(Some((filename_match, content_match, match_count)))
+        Ok(Some((
+            filename_match,
+            content_match,
+            match_count,
+            previews,
+        )))
     } else {
         Ok(None)
     }
 }
 
-fn read_file_and_search(path: &Path, pattern: &str) -> io::Result<usize> {
+fn read_file_and_search(
+    path: &Path,
+    pattern: &str,
+) -> io::Result<(usize, Vec<String>)> {
     let mut file = fs::File::open(path)?;
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
 
-    let count = contents.matches(pattern).count();
-    Ok(count)
+    let mut count = 0;
+    let mut previews = Vec::new();
+
+    for line in contents.lines() {
+        if let Some(pos) = line.find(pattern) {
+            count += 1;
+
+            let start = if pos < 8 { 0 } else { pos - 8 };
+            let end = (pos + pattern.len() + 8).min(line.len());
+
+            let mut preview = String::new();
+            preview.push_str(&line[start..pos]);
+            preview.push_str(&format!("{}{}{}", YELLOW, pattern, RESET));
+            preview.push_str(&line[pos + pattern.len()..end]);
+
+            previews.push(preview);
+        }
+    }
+
+    Ok((count, previews))
 }
