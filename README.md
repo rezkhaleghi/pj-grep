@@ -28,7 +28,7 @@ To use [`pjgrep`](command:_github.copilot.openSymbolFromReferences?%5B%22%22%2C%
 
    ```sh
    git clone https://github.com/rezkhaleghi/pj-grep.git
-   cd pjgrep
+   cd pj-grep
    ```
 
 3. **Build the Project**:
@@ -42,7 +42,7 @@ To use [`pjgrep`](command:_github.copilot.openSymbolFromReferences?%5B%22%22%2C%
    Optionally, you can copy the binary to a directory in your `$PATH` (e.g., `/usr/local/bin` or `~/bin`) for easy access:
 
    ```sh
-   cp target/release/pjgrep /usr/local/bin/pjgrep
+   sudo cp target/release/pjgrep /usr/local/bin/pjgrep
    ```
 
 ## Usage
@@ -53,7 +53,7 @@ pjgrep <pattern> [directory] [--format=<ext1,ext2,...>]
 
 - `<pattern>`: The pattern to search for.
 - `[directory]`: The directory to search in (optional, defaults to the current directory).
-- `[--format=<ext1,ext2,...>]`: A comma-separated list of file extensions to filter by (optional).
+- `[--format=<txt,json,ts,env,...>]`: A comma-separated list of file extensions to filter by (optional).
 
 ### Examples
 

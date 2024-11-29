@@ -104,7 +104,7 @@ fn traverse_directory(
                         println!("  📝 Both filename and content match found in this file!");
                     }
 
-                    println!("----------------------------------------");
+                    println!("-------------------------------------------------------------");
                 }
             }
         }
