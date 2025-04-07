@@ -86,6 +86,13 @@ Created and maintained by "PocketJack (Rez Khaleghi)"
 - GitHub: https://github.com/rezkhaleghi
 - Email: rezaxkhaleghi@gmail.com
 
+## Support
+
+If you enjoy this app and would like to support my work:
+
+- Patreon : https://patreon.com/PocketJack
+  Your support helps me continue developing free and open-source stuff.
+
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
